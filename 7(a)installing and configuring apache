@@ -1,0 +1,58 @@
+ Installing and Configuring Apache on Fedora
+This section covers installing Apache (`httpd`) on Fedora Server, configuring it, creating a basic website, and ensuring it works in VMware.
+ 1. Update Fedora
+ .................
+sudo dnf update -y
+
+2. Install Apache
+..................
+sudo dnf install httpd -y
+
+3. Start and Enable Apache
+...........................
+sudo systemctl enable --now httpd
+sudo systemctl status httpd
+
+4. Open Firewall for HTTP
+...........................
+sudo firewall-cmd --add-service=http --permanent
+sudo firewall-cmd --reload
+
+5. Create Website Directory
+............................
+sudo mkdir -p /var/www/html/mywebsite
+sudo chown -R $USER:$USER /var/www/html/mywebsite
+sudo chmod -R 755 /var/www/html
+
+6. Add a Basic Homepage
+........................
+create index.html:
+nano /var/www/html/mywebsite/index.html
+Replace 'welcome to Imani's website' with whatever you want to appear on the homepage:
+<h1>Welcome to Imani's Website</h1>
+
+Save and exit.(ctrl+o,enter,ctrl+x)
+
+7. Test Apache
+...............
+Open your web browser and visit:
+http://<your-server-ip>
+
+You should see either the default Apache page or your homepage.
+If you're not sure about your ip you can check it using:
+ip a
+8. SELinux (If Enabled)
+sudo chcon -R -t httpd_sys_content_t /var/www/html/mywebsite
+
+ Note About .gitignore
+ ......................
+When working with configuration files on Linux, especially for Apache:
+- DO NOT upload private keys such as:  
+  - `mywebsite.key`  
+  - SSL certificates  
+  - Password files  
+  - Backups  
+To prevent uploading sensitive files to GitHub,I created a `.gitignore` file in my repository:
+This ensures private server files never get pushed accidentally.
+
+
