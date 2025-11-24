@@ -1,0 +1,63 @@
+
+This section covers enabling HTTPS using SSL/TLS and setting up Apache Virtual Hosts for HTTPS.
+
+1. Install SSL Packages
+sudo dnf install mod_ssl openssl certbot python3-certbot-apache -y
+
+2. Create an SSL Directory
+sudo mkdir -p /etc/ssl/mywebsite
+
+3. I generated a self signed certificate:
+sudo openssl req -x509 -nodes -days 365 \
+  -newkey rsa:2048 \
+  -keyout /etc/ssl/mywebsite/mywebsite.key \
+  -out /etc/ssl/mywebsite/mywebsite.crt \
+  -subj "/C=KE/ST=Nairobi/L=Nairobi/O=Imani Bashir/CN=mywebsite.com"
+
+Explanation of each part:
+sudo openssl req → start a certificate request
+-x509 → create a self-signed certificate (instead of CSR)
+-nodes → do not encrypt the private key (so Apache can read it automatically)
+-days 365 → certificate is valid for 1 year
+-newkey rsa:2048 → generate a new 2048-bit RSA key
+-keyout → path to save the private key
+-subj → certificate details (country, state, location, organization, common name
+
+4. HTTPS Virtual Host (Port 443)
+sudo nano /etc/httpd/conf.d/mywebsite-ssl.conf
+
+<VirtualHost *:443>
+    ServerAdmin webmaster@mywebsite.com
+    DocumentRoot /var/www/html/mywebsite
+    ServerName mywebsite.com
+    ServerAlias www.mywebsite.com
+
+    SSLEngine on
+    SSLCertificateFile /etc/ssl/mywebsite/mywebsite
+    SSLCertificateKeyFile /etc/ssl/mywebsite/
+
+    <Directory /var/www/html/mywebsite>
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ErrorLog /var/log/httpd/mywebsite-ssl-error.log
+    CustomLog /var/log/httpd/mywebsite-ssl-access.log combined
+</VirtualHost>
+
+5. Enable Firewall for HTTPS
+sudo firewall-cmd --permanent --add-service=https
+sudo firewall-cmd --reload
+
+6. Restart Apache
+sudo apachectl configtest
+sudo systemctl restart httpd
+
+7. Test HTTPS
+Visit:
+https://mywebsite.com
+
+8.Optional: Certbot Automates SSLfor real domains instead of the self signed certificate
+sudo certbot --apache -d mywebsite.com -d www.mywebsite.com
+sudo certbot renew --dry-run
+
