@@ -1,0 +1,51 @@
+ Virtual Hosting on Apache (Fedora)
+This section covers configuring multiple websites on one Apache server using Virtual Hosts.
+
+ 1. Create Directories for Each Website you want to create:
+sudo mkdir -p /var/www/html/example1(mywebsite)
+sudo mkdir -p /var/www/html/example2
+sudo chown -R $USER:$USER /var/www/html/example*
+sudo chmod -R 755 /var/www/html/example*
+
+2. HTTP Virtual Host for Redirection (Port 80)
+Create configuration file:
+sudo nano /etc/httpd/conf.d/mywebsite.conf
+It should look like this:
+<VirtualHost *:80>
+    ServerName mywebsite.com
+    ServerAlias www.mywebsite.com
+
+    # Redirect all HTTP traffic to HTTPS
+    Redirect "/" "https://mywebsite.com/"
+
+    ErrorLog /var/log/httpd/mywebsite-error.log
+    CustomLog /var/log/httpd/mywebsite-access.log combined
+</VirtualHost>
+
+3. Directory Permissions for Virtual Hosts
+sudo chcon -R -t httpd_sys_content_t /var/www/html/example1
+sudo chcon -R -t httpd_sys_content_t /var/www/html/example2
+
+4. Test Virtual Hosts
+sudo apachectl configtest
+sudo systemctl restart httpd
+Visit:
+http://example1.com
+http://example2.com
+
+5. Add Your Homepage to Virtual Hosts
+sudo nano /var/www/html/example1/index.html
+Write:
+html
+<h1>Welcome to Imani's Website</h1>
+Repeat for other sites as needed.
+
+6.Testing the Website
+In your web browser:
+http://mywebsite.com
+
+Should redirect automatically to:
+https://mywebsite.com
+
+Your homepage should display:
+“Welcome to Imani's Website” or whatever you added for your homepage
